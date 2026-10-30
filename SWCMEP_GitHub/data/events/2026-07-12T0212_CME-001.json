@@ -1,0 +1,42 @@
+{
+  "event_name": "2026-07-12T02:12:00-CME-001 independent run",
+  "simulation_start_utc": "2026-07-12T05:22:00Z",
+  "simulation_hours": 72.0,
+  "relax_hours": 6.0,
+  "output_every_hours": 1.0,
+  "grid": {
+    "nr": 128,
+    "ntheta": 45,
+    "nphi": 90
+  },
+  "solver": {
+    "dtype": "float64",
+    "cfl": 0.25,
+    "spatial_order": 2,
+    "shock_flattening": true,
+    "shock_threshold": 2.0
+  },
+  "assumptions": {
+    "duration_hours": 6.0,
+    "density_enhancement": 4.0,
+    "temperature_K": 2000000.0,
+    "drag_coefficient": 0.0,
+    "source": "Not listed in ENLIL inputs; documented SWCMEP baseline assumptions"
+  },
+  "cmes": [
+    {
+      "analysis_id": "2026-07-12T02:12:00-CME-001",
+      "time_21_5_utc": "2026-07-12T05:22:00Z",
+      "longitude_deg": 46.0,
+      "latitude_deg": 13.0,
+      "speed_kms": 934.0,
+      "half_width_deg": 17.0
+    }
+  ],
+  "comparison": {
+    "enlil_predicted_arrival_utc": null,
+    "observed_shock_arrival_utc": null,
+    "observation_source": null
+  },
+  "output_prefix": "data/runs/2026-07-12T0212_CME-001"
+}

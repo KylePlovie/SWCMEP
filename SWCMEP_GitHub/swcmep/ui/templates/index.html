@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SWCMEP Control Center</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Solar Wind & CME Projector</p>
+      <h1>SWCMEP Control Center</h1>
+    </div>
+    <div class="device-status"><span class="pulse"></span> Local solver</div>
+  </header>
+
+  <main class="workspace">
+    <aside class="control-panel">
+      <form id="run-form">
+        <section>
+          <h2>Event</h2>
+          <label>Event name<input name="event_name" value="July 9 CME benchmark" required></label>
+          <label>Analysis ID<input name="analysis_id" value="2026-07-09T07:53:00-CME-001" required></label>
+          <label>Time at 21.5 R☉<input name="time_21_5_utc" value="2026-07-09T11:57:00Z" required></label>
+          <div class="field-grid">
+            <label>Longitude (°)<input name="longitude_deg" type="number" step="0.1" value="20"></label>
+            <label>Latitude (°)<input name="latitude_deg" type="number" step="0.1" value="-8"></label>
+            <label>Speed (km/s)<input name="speed_kms" type="number" step="1" value="749"></label>
+            <label>Half-angle (°)<input name="half_width_deg" type="number" min="5" max="90" step="0.1" value="31"></label>
+          </div>
+        </section>
+
+        <section>
+          <h2>Plasma assumptions</h2>
+          <div class="field-grid">
+            <label>Pulse duration (h)<input name="pulse_duration_hours" type="number" step="0.1" value="6"></label>
+            <label>Density factor<input name="density_enhancement" type="number" step="0.1" value="4"></label>
+            <label>Temperature (MK)<input name="temperature_mk" type="number" step="0.1" value="2"></label>
+            <label>Drag coefficient<input name="drag_coefficient" type="number" step="0.0000001" value="0"></label>
+          </div>
+        </section>
+
+        <details>
+          <summary>Grid and solver</summary>
+          <div class="field-grid advanced-fields">
+            <label>Radial cells<input name="nr" type="number" value="128"></label>
+            <label>Theta cells (odd)<input name="ntheta" type="number" value="45"></label>
+            <label>Phi cells<input name="nphi" type="number" value="90"></label>
+            <label>Simulation (h)<input name="simulation_hours" type="number" step="1" value="84"></label>
+            <label>Relaxation (h)<input name="relax_hours" type="number" step="0.5" value="6"></label>
+            <label>Output cadence (h)<input name="output_every_hours" type="number" step="0.25" value="1"></label>
+            <label>CFL<input name="cfl" type="number" step="0.05" value="0.25"></label>
+            <label>Order<select name="spatial_order"><option value="2" selected>2 — hybrid MUSCL</option><option value="1">1 — HLLE</option></select></label>
+            <label>Precision<select name="dtype"><option value="float64" selected>float64</option><option value="float32">float32</option></select></label>
+            <label>Shock threshold<input name="shock_threshold" type="number" step="0.1" value="2"></label>
+          </div>
+          <label class="check"><input name="shock_flattening" type="checkbox" checked> Shock flattening</label>
+        </details>
+
+        <details>
+          <summary>Comparison times</summary>
+          <label>ENLIL arrival<input name="enlil_predicted_arrival_utc" value="2026-07-12T01:38:00Z"></label>
+          <label>Observed arrival<input name="observed_shock_arrival_utc" value="2026-07-12T02:30:00Z"></label>
+          <label>Observation source<input name="observation_source" value="M2M_CATALOG IPS-001 v2"></label>
+        </details>
+
+        <p id="form-error" class="error" role="alert"></p>
+        <div class="form-actions">
+          <button type="button" id="smoke-button" class="secondary">Smoke test</button>
+          <button type="submit" class="primary">Run production</button>
+        </div>
+      </form>
+    </aside>
+
+    <section class="results-panel">
+      <div class="run-toolbar">
+        <label>Run<select id="job-select"><option value="">No runs yet</option></select></label>
+        <button type="button" id="cancel-button" class="danger" disabled>Cancel run</button>
+      </div>
+
+      <section class="status-card" aria-live="polite">
+        <div class="status-row">
+          <strong id="run-title">Configure an event to begin</strong>
+          <span id="run-state" class="state idle">Idle</span>
+        </div>
+        <div class="progress-track"><div id="progress-bar"></div></div>
+        <p id="progress-label">No active simulation</p>
+        <div id="summary-strip" class="summary-strip"></div>
+      </section>
+
+      <section class="visual-card">
+        <div class="visual-heading">
+          <div><p class="eyebrow">Ecliptic plane</p><h2>Heliospheric evolution</h2></div>
+          <div class="map-controls">
+            <label>Field<select id="map-field"><option value="vr_kms">Radial speed</option><option value="n_cm3">Density</option><option value="b_nt">|B|</option></select></label>
+            <button type="button" id="play-button" class="secondary" disabled>Play</button>
+          </div>
+        </div>
+        <img id="map-image" class="science-image hidden" alt="Equatorial heliospheric model map">
+        <div id="map-empty" class="empty-visual">The first map appears after background relaxation.</div>
+        <div class="frame-controls">
+          <input id="frame-slider" type="range" min="0" max="0" value="0" disabled aria-label="Simulation frame">
+          <span id="frame-label">No frames</span>
+        </div>
+      </section>
+
+      <section class="visual-card">
+        <div class="visual-heading"><div><p class="eyebrow">Earth monitor</p><h2>Arrival time series</h2></div></div>
+        <img id="earth-image" class="science-image hidden" alt="Earth solar-wind time series">
+        <div id="earth-empty" class="empty-visual">The time series appears when the run finishes.</div>
+      </section>
+
+      <details class="log-panel">
+        <summary>Solver log</summary>
+        <pre id="run-log">No run selected.</pre>
+      </details>
+    </section>
+  </main>
+  <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

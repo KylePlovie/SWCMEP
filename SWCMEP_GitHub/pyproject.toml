@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "swcmep"
+version = "0.1.2"
+description = "Solar Wind and Coronal Mass Ejection Projector"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+
+dependencies = [
+    "numpy>=1.26",
+    "scipy>=1.12",
+    "matplotlib>=3.8",
+    "torch>=2.2",
+]
+
+[project.optional-dependencies]
+web = [
+    "flask>=3.0",
+    "gunicorn>=21.0",
+]
+dev = [
+    "flask>=3.0",
+    "pytest>=8.0",
+    "pytest-cov>=4.1",
+    "ruff>=0.3",
+    "mypy>=1.9",
+]
+
+[project.scripts]
+swcmep-run   = "swcmep.cli:run"
+swcmep-plot  = "swcmep.cli:plot"
+swcmep-fetch = "swcmep.cli:fetch"
+swcmep-ui    = "swcmep.ui.app:main"
+swcmep-event = "swcmep.event_runner:main"
+swcmep-divb  = "swcmep.divergence_audit:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["swcmep*"]
+
+[tool.setuptools.package-data]
+"swcmep.ui" = ["templates/*.html", "static/*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--cov=swcmep --cov-report=term-missing"
